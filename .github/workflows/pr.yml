@@ -2,6 +2,9 @@ name: CI (PR)
 
 on:
   pull_request:
+    types: [ opened, synchronize, reopened, ready_for_review ]
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -11,10 +14,23 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: 'lts/*'
+  YARN_CACHE_PATH: |
+    .yarn/cache
+    .yarn/patches
+    .yarn/plugins
+    .yarn/releases
+    .yarn/sdks
+    .pnp.cjs
+    .pnp.loader.mjs
+
 jobs:
   setup:
     name: Setup & Cache
     runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.compute-key.outputs.key }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,41 +38,48 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Enable Corepack
+      - name: Enable Corepack (Yarn Berry)
         run: corepack enable
 
-      - name: Yarn cache
-        id: yarn-cache
+      - name: Compute cache key
+        id: compute-key
+        run: |
+          echo "key=yarn-berry-${{ runner.os }}-$(sha256sum yarn.lock | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Yarn cache
+        id: cache
         uses: actions/cache@v4
         with:
-          path: |
-            .yarn/cache
-            .yarn/patches
-            .yarn/plugins
-            .yarn/releases
-            .yarn/sdks
-            .pnp.cjs
-            .pnp.loader.mjs
-          key: yarn-${{ runner.os }}-${{ hashFiles('**/yarn.lock') }}
+          path: ${{ env.YARN_CACHE_PATH }}
+          key: ${{ steps.compute-key.outputs.key }}
 
       - name: Yarn Install
         run: yarn install
 
-      - name: Run Vitest
-        run: yarn run vitest
+      - name: Save Yarn cache again (ensures populated)
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.YARN_CACHE_PATH }}
+          key: ${{ steps.compute-key.outputs.key }}
 
-# TODO
-#      - name: Upload coverage (lcov if present)
-#        if: ${{ hashFiles('coverage/lcov.info') != '' }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: coverage-lcov
-#          path: coverage/lcov.info
-#      - name: Upload HTML coverage (if present)
-#        if: ${{ hashFiles('coverage/index.html') != '' }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: coverage-html
-#          path: coverage
+  test:
+    name: Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${ { env.NODE_VERSION } } }
+      - run: corepack enable
+      - name: Restore Yarn cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.YARN_CACHE_PATH }}
+          key: ${{ needs.setup.outputs.cache-key }}
+      - run: yarn install --immutable
+
+      - name: Run tests
+        run: yarn test
