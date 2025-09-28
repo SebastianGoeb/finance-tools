@@ -13,14 +13,6 @@ concurrency:
 
 env:
   NODE_VERSION: 'lts/*'
-  YARN_CACHE_PATH: |
-    .yarn/cache
-    .yarn/patches
-    .yarn/plugins
-    .yarn/releases
-    .yarn/sdks
-    .pnp.cjs
-    .pnp.loader.mjs
 
 jobs:
   setup:
@@ -49,7 +41,14 @@ jobs:
         id: cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.YARN_CACHE_PATH }}
+          path: &yarn-cache-path |
+            .yarn/cache
+            .yarn/patches
+            .yarn/plugins
+            .yarn/releases
+            .yarn/sdks
+            .pnp.cjs
+            .pnp.loader.mjs
           key: ${{ steps.compute-key.outputs.key }}
 
       - name: Yarn Install
@@ -75,7 +74,7 @@ jobs:
       - name: Restore Yarn cache
         uses: actions/cache/restore@v4
         with:
-          path: ${{ env.YARN_CACHE_PATH }}
+          path: *yarn-cache-path
           key: ${{ needs.setup.outputs.cache-key }}
       - run: yarn install --immutable
 
