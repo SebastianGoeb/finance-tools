@@ -69,7 +69,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: ${ { env.NODE_VERSION } } }
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - run: corepack enable
       - name: Restore Yarn cache
         uses: actions/cache/restore@v4
