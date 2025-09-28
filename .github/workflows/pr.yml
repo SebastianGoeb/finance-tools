@@ -45,7 +45,7 @@ jobs:
         run: yarn install
 
       - name: Run Vitest
-        run: yarn run vitest --coverage
+        run: yarn run vitest
 
 # TODO
 #      - name: Upload coverage (lcov if present)
