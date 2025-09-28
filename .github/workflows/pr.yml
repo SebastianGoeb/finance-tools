@@ -1,0 +1,82 @@
+name: CI (PR)
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 'lts/*'
+
+jobs:
+  setup:
+    name: Setup & Cache
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.compute-key.outputs.key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable Corepack (Yarn Berry)
+        run: corepack enable
+
+      - name: Compute cache key
+        id: compute-key
+        run: |
+          echo "key=yarn-berry-${{ runner.os }}-$(sha256sum yarn.lock | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore Yarn cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: &yarn-cache-path |
+            .yarn/cache
+            .yarn/patches
+            .yarn/plugins
+            .yarn/releases
+            .yarn/sdks
+            .pnp.cjs
+            .pnp.loader.mjs
+          key: ${{ steps.compute-key.outputs.key }}
+
+      - name: Yarn Install
+        run: yarn install
+
+      - name: Save Yarn cache again (ensures populated)
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.YARN_CACHE_PATH }}
+          key: ${{ steps.compute-key.outputs.key }}
+
+  test:
+    name: Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: corepack enable
+      - name: Restore Yarn cache
+        uses: actions/cache/restore@v4
+        with:
+          path: *yarn-cache-path
+          key: ${{ needs.setup.outputs.cache-key }}
+      - run: yarn install --immutable
+
+      - name: Run tests
+        run: yarn test
