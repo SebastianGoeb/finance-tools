@@ -1,3 +1,5 @@
+# ==== YARN ====
+
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -15,3 +17,6 @@ node_modules
 
 #!.yarn/cache
 .pnp.*
+
+# ==== CUSTOM ====
+data/
