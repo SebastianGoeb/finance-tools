@@ -33,8 +33,8 @@ describe("parseGermanDate", () => {
   const cases = [
     {input: "31.12.1999", expected: new Date("1999-12-31 00:00:00Z")},
     {input: "01.01.2000", expected: new Date("2000-01-01 00:00:00Z")},
-    {input: "01/01/2000", err: "invalid date format"},
-    {input: "2000-01-01", err: "invalid date format"},
+    {input: "01/01/2000", err: "invalid date format: 01/01/2000"},
+    {input: "2000-01-01", err: "invalid date format: 2000-01-01"},
   ]
   cases.forEach(({input, expected, err}) => test(input, () => {
     if (err) {
