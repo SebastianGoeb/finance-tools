@@ -663,6 +663,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csv-simple-parser@npm:^2.0.2":
+  version: 2.0.2
+  resolution: "csv-simple-parser@npm:2.0.2"
+  dependencies:
+    detect-eol: "npm:^3.0.1"
+  checksum: 10c0/fabd32579155cdc9528417113d2ad48021abd75ce5968f023cbd7bafbf45f3cdcb9fed196337c36558b50af7f5a36e1110f16e32eb38b23e11820436cbb9fbde
+  languageName: node
+  linkType: hard
+
 "debug@npm:4, debug@npm:^4.3.4, debug@npm:^4.4.1":
   version: 4.4.3
   resolution: "debug@npm:4.4.3"
@@ -679,6 +688,13 @@ __metadata:
   version: 5.0.2
   resolution: "deep-eql@npm:5.0.2"
   checksum: 10c0/7102cf3b7bb719c6b9c0db2e19bf0aa9318d141581befe8c7ce8ccd39af9eaa4346e5e05adef7f9bd7015da0f13a3a25dcfe306ef79dc8668aedbecb658dd247
+  languageName: node
+  linkType: hard
+
+"detect-eol@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "detect-eol@npm:3.0.1"
+  checksum: 10c0/ee6bb633d3f912954dd76d77d37cccb36e6f1fd0167e1285a83b1f0b219d142b2b87e1586359fc7dff862a3ef70189aafff4f6946da9f2c70b54b22756c37be5
   languageName: node
   linkType: hard
 
@@ -862,6 +878,7 @@ __metadata:
   resolution: "finance-tools@workspace:."
   dependencies:
     "@types/node": "npm:^24.5.2"
+    csv-simple-parser: "npm:^2.0.2"
     typescript: "npm:^5.9.2"
     vitest: "npm:^3.2.4"
   languageName: unknown
