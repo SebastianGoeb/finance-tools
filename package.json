@@ -1,6 +1,6 @@
 {
   "name": "finance-tools",
-  "packageManager": "yarn@4.10.3",
+  "packageManager": "yarn@4.18.0",
   "devDependencies": {
     "@types/node": "^24.5.2",
     "typescript": "^5.9.2",
